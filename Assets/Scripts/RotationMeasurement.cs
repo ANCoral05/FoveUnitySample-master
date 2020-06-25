@@ -51,6 +51,8 @@ public class RotationMeasurement : FOVEBehavior
     public int pattern1Saccade;
     public int pattern2Saccade;
     public GameObject screen;
+    public GameObject environment;
+    public GameObject fullEnvironment;
 
     public DistanceFromSaccadePathSound saccadePath;
     public string directory;
@@ -95,7 +97,7 @@ public class RotationMeasurement : FOVEBehavior
         SaccadeGazeAngleTrackerRightOld = SaccadeGazeAngleTrackerRightNew;
         QueueTrackingData();
         difference = totalAngles - headsetAngles;
-        print("X: " + difference.x + ", Y: " + difference.y);
+        //print("X: " + difference.x + ", Y: " + difference.y);
 
         //if(saccadePath.startTime > 0)
         {
@@ -140,10 +142,17 @@ public class RotationMeasurement : FOVEBehavior
             //header += "SaccadeVerticalAngle" + delimiter;
         }
         if (savePosition)
-            header += trackedGameobject.name + "_position" + delimiter;
+        {
+            header += trackedGameobject.name + "_localPosition" + delimiter;
+            header += trackedGameobject.name + "_globalPosition" + delimiter;
+        }
         if (saveOrientation)
+        {
             header += trackedGameobject.name + "_orientation" + delimiter;
-            header += "messages" + delimiter;
+            header += "World_orientation" + delimiter;
+        }
+
+        header += "messages" + delimiter;
         sw.WriteLine(header);
         sw.Close();
     }
@@ -155,7 +164,7 @@ public class RotationMeasurement : FOVEBehavior
     void QueueTrackingData()
     {
         // timestamp: use time at beginning of frame. What makes sense here? Use eye tracker timestamp?
-        string datasetLine = Time.time.ToString("F5") + delimiter; // convert with 3 digits after decimal point
+        string datasetLine = Time.time.ToString("F3") + delimiter; // convert with 3 digits after decimal point
         // eyetracking data
         //if (saveEyeTracking)
         //    datasetLine += eyeTrackingData.ToString + delimiter;
@@ -173,11 +182,19 @@ public class RotationMeasurement : FOVEBehavior
         }
         // tracked game object's position
         if (savePosition)
+        {
             datasetLine += trackedGameobject.transform.position.ToString("F2") + delimiter;
+            datasetLine += Vector3.zero - environment.transform.localPosition;
+        }
         // tracked game object's orientation
         if (saveOrientation)
+        {
             datasetLine += trackedGameobject.transform.eulerAngles.ToString("F2") + delimiter;
-        // buffered message
+            datasetLine += fullEnvironment.transform.eulerAngles.y;
+        }
+            // buffered message
+
+
         if (!String.IsNullOrEmpty(msgBuffer))
         {
             datasetLine += msgBuffer + delimiter;

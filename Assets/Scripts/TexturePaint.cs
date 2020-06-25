@@ -34,10 +34,11 @@ public class TexturePaint : FOVEBehavior
     private int colorPercentage; //by Alex
     public DistanceFromSaccadePathSound saccadePath;
     public RotationMeasurement rotationMeasurement;
+    public PlayerCollisionCounter collisionCounter;
     public float totalPercentage;
     private int lastThreeSecondPixels;
     public float lastThreeSecondPercentage;
-    public MeshRenderer heatmapVisualization;
+    //public MeshRenderer heatmapVisualization;
     public GameObject canvasScore;
     public TextMesh textScore;
     public GameObject goal;
@@ -128,7 +129,7 @@ public class TexturePaint : FOVEBehavior
 
             Texture2D texture2D = new Texture2D(mainTexture.width, mainTexture.height, TextureFormat.RGBA32, false);
         
-            Texture2D pngTex = new Texture2D(mainTexture.width, mainTexture.height, TextureFormat.RGBA32, false);
+            //Texture2D pngTex = new Texture2D(mainTexture.width, mainTexture.height, TextureFormat.RGBA32, false);
 
             RenderTexture currentRT = RenderTexture.active;
 
@@ -139,7 +140,7 @@ public class TexturePaint : FOVEBehavior
             RenderTexture.active = renderTexture;
 
             texture2D.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
-            texture2D.Apply();          
+            texture2D.Apply();
 
             Color[] pixels = texture2D.GetPixels();
 
@@ -163,14 +164,15 @@ public class TexturePaint : FOVEBehavior
             totalPercentage = colorPercentage * 100.00f / (pixels.Length/(100.00f/readSteps));
             lastThreeSecondPercentage = lastThreeSecondPixels * 100.00f / (pixels.Length/(100.00f / readSteps));
             averageGazeArea.Add(lastThreeSecondPercentage);
-            print(totalPercentage.ToString("F2") + "% of the visual field were covered in total, " + lastThreeSecondPercentage.ToString("F2") + "% within the last 3 seconds.");
+            if(!finished)
+                print(totalPercentage.ToString("F2") + "% of the visual field were covered in total, " + lastThreeSecondPercentage.ToString("F2") + "% within the last 3 seconds.");
             RenderTexture.active = currentRT;
 
-            if (Input.GetKeyDown(KeyCode.T) || (distanceGoal < 3) && !finished)
+            if (Input.GetKeyDown(KeyCode.T) || ((distanceGoal < 3) && !finished))
             {
-                pngTex.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
-                pngTex.Apply();
-                byte[] bytes = pngTex.EncodeToPNG();
+                //pngTex.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+                //pngTex.Apply();
+                byte[] bytes = texture2D.EncodeToPNG();
                 File.WriteAllBytes(rotationMeasurement.directory + "SavedScreen" + System.DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".png", bytes);
                 //heatmapVisualization.material.mainTexture = pngTex;
 
@@ -183,7 +185,7 @@ public class TexturePaint : FOVEBehavior
 
                 averageGazeAreaNumber = averageGazeAreaNumber / averageGazeArea.Count;
 
-                textScore.text = "Kollisionen: " + 0.ToString() + "\n Zeit: " + Time.time.ToString("F2") + "s \n Durchschnittliche Sehfläche: " + averageGazeAreaNumber.ToString("F2") + "% \n Gesamte Sehfläche: " + totalPercentage.ToString("F2") + "%";
+                textScore.text = "Kollisionen: " + collisionCounter.obstacleCollision + "\n Zeit: " + Time.time.ToString("F2") + "s \n Durchschnittliche Sehfläche: " + averageGazeAreaNumber.ToString("F2") + "% \n Gesamte Sehfläche: " + totalPercentage.ToString("F2") + "%";
 
                 finished = true;
             }

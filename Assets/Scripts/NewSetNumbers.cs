@@ -3,9 +3,31 @@ using System.Collections.Generic;
 using Fove.Unity;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using System;
+using System.IO;
 
 public class NewSetNumbers : FOVEBehavior
 {
+    public int participantNumber = 0;
+    public string trackingFile = "SaccadeTracking.csv"; // maybe change to automatically get subject dependend name?
+    public string delimiter = ";";
+    Queue trackingDataQueue = new Queue();
+    static string msgBuffer = "";
+    public RotationMeasurement rotationMeasurement;
+    public string directory;
+    public string datasetLine;
+    public AudioSource audioSource;
+    public AudioClip upClip;
+    public AudioClip downClip;
+    public TexturePaint texturePainter;
+
+    private float timeTracker;
+
+    public List<float> targetTime;
+
+    public List<Vector3> targetPosition;
+
     public TextMesh TargetText;
 
     public Transform Screen;
@@ -54,39 +76,54 @@ public class NewSetNumbers : FOVEBehavior
 
     public float minDistance;
 
-    public SaveOnLoad saveOnLoad;
+    //public SaveOnLoad saveOnLoad;
+
+    public int averageCorrectTargets = 0;
+
+    private int currentCorrectTargets;
+
+    public int currentTargets;
+
+    public int spottedTargets;
+
+    public float startTime;
+
+    public float endTime;
 
     // Start is called before the first frame update
     void Start()
     {
-        saveOnLoad = FindObjectOfType<SaveOnLoad>();
+
+        //saveOnLoad = FindObjectOfType<SaveOnLoad>();
     }
 
 
     // Update is called once per frame
     void Update()
     {
-        if (saveOnLoad.stage == 4 && !canvas.activeSelf)
-        {
-            canvas.SetActive(true);
+        //if (saveOnLoad.stage == 4 && !canvas.activeSelf)
+        //{
+        //    canvas.SetActive(true);
 
-            Infotext.SetActive(true);
+        //    Infotext.SetActive(true);
 
-            saveOnLoad.stage = 5;
-        }
+        //    saveOnLoad.stage = 5;
+        //}
 
         if (step == 0)
         {
-            GameObject[] targets = GameObject.FindGameObjectsWithTag("TargetNumber");
+            canvas.SetActive(true);
 
-            foreach (GameObject target in targets) GameObject.Destroy(target);
+            //GameObject[] targets = GameObject.FindGameObjectsWithTag("TargetNumber");
 
-            TargetNumber = Random.Range(0, 10);
+            //foreach (GameObject target in targets) GameObject.Destroy(target);
+
+            TargetNumber = UnityEngine.Random.Range(0, 10);
 
             Infotext.GetComponent<TextMesh>().text = "Suche: \n" + TargetNumber;
 
-            if(saveOnLoad.stage > 3)
-                saveOnLoad.stage = 5;
+            //if(saveOnLoad.stage > 3)
+            //    saveOnLoad.stage = 5;
 
             step = 1;
         }
@@ -132,7 +169,7 @@ public class NewSetNumbers : FOVEBehavior
 
             audioSourceBling.PlayOneShot(loaded);
 
-            print("before" + Time.realtimeSinceStartup * 1000);
+            //print("before" + Time.realtimeSinceStartup * 1000);
 
             //placement = Random.insideUnitCircle;
 
@@ -145,65 +182,130 @@ public class NewSetNumbers : FOVEBehavior
             //    TargetText.text = Random.Range(0, 10).ToString();
             //}
 
+            if (averageCorrectTargets == 0)
+                averageCorrectTargets = UnityEngine.Random.Range(2, 5);
+
             InvokeRepeating("PlaceNumbers", 0, 0.001f);
 
-            GameObject[] targets = GameObject.FindGameObjectsWithTag("TargetNumber");
+            //GameObject[] targets = GameObject.FindGameObjectsWithTag("TargetNumber");
 
-            if (targets.Length == TargetAmount)
+            if (currentTargets == TargetAmount)
             {
                 CancelInvoke("PlaceNumbers");
+                step = 3;
 
-                print("after" + Time.realtimeSinceStartup * 1000);
+                //print("after" + Time.realtimeSinceStartup * 1000);
             }
-            if (targets.Length == TargetAmount)
-            {
-                foreach (GameObject target in targets)
-                    if (target.GetComponent<TextMesh>().text == TargetNumber.ToString())
-                    {
-                        //print("Found one!" + target.transform.name);
+            //if (targets.Length == TargetAmount)
+            //{
+            //    foreach (GameObject target in targets)
+            //        if (target.GetComponent<TextMesh>().text == TargetNumber.ToString())
+            //        {
+            //            //print("Found one!" + target.transform.name);
 
-                        CorrectTargetNumber += 1;
-                    }
+            //            CorrectTargetNumber += 1;
+            //        }
 
                 //print("Target number:" + TargetNumber + "; Targets: " + CorrectTargetNumber);
 
-                step = 3;
-            }
+
+            //}
         }
 
         if (step == 3)
         {
+            if (startTime == 0)
+                startTime = Time.time;
+
             GameObject[] targets = GameObject.FindGameObjectsWithTag("TargetNumber");
 
-            if (targets.Length == (TargetAmount - CorrectTargetNumber))
+            if (Input.GetKeyDown(KeyCode.UpArrow) && spottedTargets < 4)
             {
-                saveOnLoad.stage = 6;
+                audioSource.PlayOneShot(upClip);
 
-                if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    canvas.SetActive(true);
+                spottedTargets += 1;
+            }
 
-                    Infotext.SetActive(true);
+            if (Input.GetKeyDown(KeyCode.DownArrow) && spottedTargets > 0)
+            {
+                spottedTargets -= 1;
 
-                    CorrectTargetNumber = 0;
-
-                    step = 0;
-                }
-
+                audioSource.PlayOneShot(downClip);
+            }
+            if (Input.GetKeyDown(KeyCode.RightArrow) && spottedTargets >= 2)
+            {
                 foreach (GameObject target in targets) GameObject.Destroy(target);
+
+                //saveOnLoad.stage = 6;
+
+                endTime = Time.time - startTime;
+
+                //canvas.SetActive(true);
+
+                //Infotext.SetActive(true);
+
+                //CorrectTargetNumber = 0;
+
+                //averageCorrectTargets = 0;
+
+                //currentTargets = 0;
+
+                //currentCorrectTargets = 0;
+
+                //spottedTargets = 0;
+
+                //startTime = 0;
+
+                //step = 0;
+
+                step = 4;
+            }
+
+        }
+
+        if(step == 4)
+        {
+            if (timeTracker == 0)
+                timeTracker = Time.time;
+
+            texturePainter.searchFinished = true;
+            
+            directory = rotationMeasurement.directory;
+
+            Directory.CreateDirectory(directory);
+            WriteHeader();
+
+            WriteTrackingData();
+
+            print("Writing Numbers.");
+
+            if (timeTracker + 0.2f < Time.time)
+            {
+                timeTracker = 1f;
+
+                step = 5;
+            }
+        }
+
+        if(step == 5)
+        {
+            timeTracker -= Time.deltaTime;
+            if (timeTracker <= 0)
+            {
+                Scene scene = SceneManager.GetActiveScene(); SceneManager.LoadScene(scene.name);
             }
         }
     }
 
     void PlaceNumbers()
     {
-        GameObject[] targets = GameObject.FindGameObjectsWithTag("TargetNumber");
+        //GameObject[] targets = GameObject.FindGameObjectsWithTag("TargetNumber");
 
-        if (targets.Length < TargetAmount)
+        if (currentTargets < TargetAmount)
         {
-            coordinates.x = Random.Range(95.0f-fieldScale*0.55f, 95.0f+fieldScale*0.55f);
+            coordinates.x = UnityEngine.Random.Range(95.0f-fieldScale*0.55f, 95.0f+fieldScale*0.55f);
 
-            coordinates.y = Random.Range(90.0f-fieldScale*0.9f, 90.0f + fieldScale * 0.9f);
+            coordinates.y = UnityEngine.Random.Range(90.0f-fieldScale*0.9f, 90.0f + fieldScale * 0.9f);
 
             positionVector = new Vector3(
                 Screen.transform.position.x + (2.72f * Mathf.Sin(coordinates.x * Mathf.Deg2Rad) * Mathf.Cos(coordinates.y * Mathf.Deg2Rad)), 
@@ -216,8 +318,74 @@ public class NewSetNumbers : FOVEBehavior
             {
                 Instantiate(TargetText, positionVector, Quaternion.LookRotation(positionVector - Screen.transform.position));
 
-                TargetText.text = Random.Range(0, 10).ToString();
+                if (currentCorrectTargets < averageCorrectTargets)
+                {
+                    TargetText.text = TargetNumber.ToString();
+
+                    currentCorrectTargets += 1;
+                }
+                else
+                {
+                    TargetText.text = UnityEngine.Random.Range(0, 10).ToString();
+
+                    while (TargetText.text == TargetNumber.ToString())
+                        TargetText.text = UnityEngine.Random.Range(0, 10).ToString();
+                }
+                currentTargets += 1;
             }
         }
+    }
+
+    void WriteHeader()
+    {
+        StreamWriter sw = new StreamWriter(directory + trackingFile);
+        string header = "Time of decision" + delimiter;
+        header += "actualTargets" + delimiter;
+        header += "spottedTargets" + delimiter;
+        header += "totalArea" + delimiter;
+        header += "averageArea" + delimiter;
+
+        sw.WriteLine(header);
+        sw.Close();
+    }
+
+    public static void Msg(string msg)
+    {
+        msgBuffer = msg;
+    }
+
+    void WriteTrackingData()
+    {
+        print("Writing data now!");
+
+        datasetLine = endTime.ToString("F2") + delimiter;
+        datasetLine += averageCorrectTargets + delimiter;
+        datasetLine += + spottedTargets + delimiter;
+        datasetLine += texturePainter.totalPercentage.ToString("F2") + delimiter;
+        datasetLine += texturePainter.averageGazeAreaNumber.ToString("F2") + delimiter;
+        trackingDataQueue.Enqueue(datasetLine);
+
+        //for (int i = 0; i < spottedTargets; i++)
+        //{
+        //    datasetLine = i + 1 + delimiter;
+        //    datasetLine += targetTime[i] + delimiter;
+        //    datasetLine += targetPosition[i] + delimiter;
+
+        //    if (!String.IsNullOrEmpty(msgBuffer))
+        //    {
+        //        datasetLine += msgBuffer + delimiter;
+        //        msgBuffer = "";
+        //    }
+        //    trackingDataQueue.Enqueue(datasetLine);
+        //}
+
+        StreamWriter sw = new StreamWriter(directory + trackingFile, true);
+
+        while (trackingDataQueue.Count > 0)
+        {
+            datasetLine = trackingDataQueue.Dequeue().ToString();
+            sw.WriteLine(datasetLine);
+        }
+        sw.Close();
     }
 }

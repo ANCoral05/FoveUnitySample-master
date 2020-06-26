@@ -12,10 +12,13 @@ public class MovingObstacle : MonoBehaviour
     public Vector3 startPosition;
     private float randomInterval;
     private GameObject target;
+    public GameObject player;
+    private bool inArea;
 
     // Start is called before the first frame update
     void Start()
     {
+        player = FindObjectOfType<Camera>().gameObject;
         startPosition = transform.localPosition;
         target = new GameObject("target");
         target.transform.parent = transform.parent;
@@ -28,11 +31,17 @@ public class MovingObstacle : MonoBehaviour
     {
         intervalCounter += Time.deltaTime;
 
-        if(intervalCounter > randomInterval)
+        float playerDistance = Vector3.Magnitude(transform.position - player.transform.position);
+
+        if(intervalCounter > randomInterval || (playerDistance < 8 && !inArea))
         {
             target.transform.localPosition = new Vector3(startPosition.x + Random.Range(-0.5f, 0.5f) * movingRangeX, startPosition.y, startPosition.z + Random.Range(-0.5f, 0.5f) * movingRangeZ);
-            randomInterval = Random.Range(0.5f, 1.5f) * movingInterval;
+            randomInterval = Random.Range(0.8f, 1.5f) * movingInterval;
             intervalCounter = 0;
+            if (playerDistance < 8)
+            {
+                inArea = true;
+            }
         }
 
         float distance = Vector3.Magnitude(target.transform.localPosition - transform.localPosition);

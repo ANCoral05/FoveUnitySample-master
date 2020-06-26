@@ -34,6 +34,10 @@ public class PlayerCollisionCounter : MonoBehaviour
 
     private float realWalkingSpeed;
 
+    public AudioSource audioSource;
+
+    public TexturePaint texturePainter;
+
     //Data storage
 
     [Header("Output Settings")]
@@ -42,6 +46,9 @@ public class PlayerCollisionCounter : MonoBehaviour
     public string delimiter = ";";
 
     public string directory;
+    private string visualTask;
+    private string scanningPattern;
+    private ManagerScript manager;
     Queue trackingDataQueue = new Queue();
     static string msgBuffer = "";
 
@@ -50,7 +57,23 @@ public class PlayerCollisionCounter : MonoBehaviour
     {
         obstacleCollision = 0;
 
-        directory = "Assets/Resources/Participant_" + participantNumber.ToString() + "_Date_" + System.DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + "/";
+        manager = GameObject.FindGameObjectWithTag("Manager").GetComponent<ManagerScript>();
+
+        if (manager.searchTask)
+            visualTask = "_SearchTask";
+        if (manager.navigation)
+            visualTask = "_Navigation";
+        if (!manager.searchTask && !manager.navigation)
+            visualTask = "_NoTask";
+
+        if (manager.leftRight)
+            scanningPattern = "_LeftRightScanning";
+        if (manager.radial)
+            scanningPattern = "_RadialScanning";
+        if (!manager.radial && !manager.leftRight)
+            scanningPattern = "_FreeScanning";
+
+        directory = "Assets/Resources/Participant_" + participantNumber + visualTask + scanningPattern + "_Date_" + System.DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + "/";
         Directory.CreateDirectory(directory);
         WriteHeader();
     }
@@ -84,6 +107,8 @@ public class PlayerCollisionCounter : MonoBehaviour
 
             time.Add(Time.time);
 
+            audioSource.Play();
+
             realWalkingSpeed = navigationControls.realWalkingSpeed;
 
             knockbackTimer = 0.5f;
@@ -103,6 +128,8 @@ public class PlayerCollisionCounter : MonoBehaviour
 
             time.Add(Time.time);
 
+            audioSource.Play();
+
             realWalkingSpeed = navigationControls.realWalkingSpeed;
 
             knockbackTimer = 0.5f;
@@ -111,7 +138,7 @@ public class PlayerCollisionCounter : MonoBehaviour
 
             timer = 0;
         }
-        if (collision.gameObject.tag == "goal" && !save)
+        if (collision.gameObject.tag == "goal" && !save || (manager.searchTask && Input.GetKeyDown(KeyCode.Space)))
         {
             WriteTrackingData();
 
@@ -122,9 +149,7 @@ public class PlayerCollisionCounter : MonoBehaviour
     void WriteHeader()
     {
         StreamWriter sw = new StreamWriter(directory + trackingFile);
-        string header = "Time" + delimiter;
-
-        header += "CollisionNumber" + delimiter;
+        string header = "CollisionNumber" + delimiter;
         header += "CollisionPosition" + delimiter;
         header += "CollisionTime" + delimiter;
         header += "CollisionType" + delimiter;
@@ -142,11 +167,14 @@ public class PlayerCollisionCounter : MonoBehaviour
     {
         print("Writing data now!");
 
-        for(int i = 0; i < obstacleCollision; i++)
-        {
-            datasetLine = Time.time.ToString("F2") + delimiter;
+        datasetLine = Time.time.ToString("F2") + delimiter;
+        datasetLine += "totalGazeArea: " + texturePainter.totalPercentage.ToString("F2") + delimiter;
+        datasetLine += "averageGazeArea: " + texturePainter.averageGazeAreaNumber.ToString("F2") + delimiter;
+        trackingDataQueue.Enqueue(datasetLine);
 
-            datasetLine += i+1 + delimiter;
+        for (int i = 0; i < obstacleCollision; i++)
+        {
+            datasetLine = i+1 + delimiter;
             datasetLine += position[i] + delimiter;
             datasetLine += time[i] + delimiter;
             datasetLine += moving[i] + delimiter;

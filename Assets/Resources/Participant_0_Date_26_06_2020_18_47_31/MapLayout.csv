@@ -1,0 +1,17 @@
+Number;Tile;Obstacle;
+
+1;Tile Right(Clone);Obstacle 5(Clone);
+2;Tile Left(Clone);Obstacle 16(Clone);
+3;Tile Straight(Clone);SmallObstacle Empty(Clone);
+4;Tile Left(Clone);Obstacle 14(Clone);
+5;Tile Straight(Clone);SmallObstacle 2(Clone);
+6;Tile Right(Clone);SmallObstacle Empty(Clone);
+7;goal;Obstacle 10(Clone);
+8;;SmallObstacle Empty(Clone);
+9;;Obstacle 11(Clone);
+10;;SmallObstacle 4(Clone);
+11;;SmallObstacle Empty(Clone);
+12;;Obstacle 4(Clone);
+13;;SmallObstacle 3(Clone);
+14;;Obstacle 8(Clone);
+15;;SmallObstacle 3(Clone);

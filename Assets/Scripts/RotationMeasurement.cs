@@ -32,6 +32,7 @@ public class RotationMeasurement : FOVEBehavior
     private float xAngle;
     private float yAngle;
     public Vector2 totalAngles;
+    public Vector2 totalAnglesOld;
     public Vector2 headsetAngles;
     public Vector2 difference;
     [Range(0,10), Tooltip("The smallest angle that is detected as a saccade.")]
@@ -48,14 +49,19 @@ public class RotationMeasurement : FOVEBehavior
     public bool savePosition = true;
     public bool saveOrientation = true;
     public int saccadeNumber;
-    public int pattern1Saccade;
-    public int pattern2Saccade;
+    public int pattern1Saccade = 0;
+    public int pattern1SaccadeTotal;
+    public int pattern2Saccade = 0;
+    public int pattern2SaccadeTotal;
     public GameObject screen;
     public GameObject environment;
     public GameObject fullEnvironment;
 
     public DistanceFromSaccadePathSound saccadePath;
+    private ManagerScript manager;
     public string directory;
+    private string visualTask;
+    private string scanningPattern;
 
     private static float wrapAngle(float angle)
     {
@@ -71,7 +77,23 @@ public class RotationMeasurement : FOVEBehavior
     // Start is called before the first frame update
     void Start()
     {
-        directory = "Assets/Resources/Participant_" + participantNumber.ToString() + "_Date_" + System.DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + "/";
+        manager = GameObject.FindGameObjectWithTag("Manager").GetComponent<ManagerScript>();
+
+        if (manager.searchTask)
+            visualTask = "_SearchTask";
+        if (manager.navigation)
+            visualTask = "_Navigation";
+        if (!manager.searchTask && !manager.navigation)
+            visualTask = "_NoTask";
+
+        if (manager.leftRight)
+            scanningPattern = "_LeftRightScanning";
+        if (manager.radial)
+            scanningPattern = "_RadialScanning";
+        if (!manager.radial && !manager.leftRight)
+            scanningPattern = "_FreeScanning";
+
+        directory = "Assets/Resources/Participant_" + manager.participantNumber + visualTask + scanningPattern + "_Date_" + System.DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + "/";
         Directory.CreateDirectory(directory);
         WriteHeader();
         InvokeRepeating("WriteTrackingData", 0.0f, 1.0f); // save data to file every second
@@ -87,6 +109,7 @@ public class RotationMeasurement : FOVEBehavior
         xAngle = (SaccadeGazeAngleTrackerRightNew.x - SaccadeGazeAngleTrackerRightOld.x)*Mathf.Rad2Deg;
         yAngle = (SaccadeGazeAngleTrackerRightNew.y - SaccadeGazeAngleTrackerRightOld.y)*Mathf.Rad2Deg;
         totalAngles = new Vector2(Mathf.Asin(SaccadeGazeAngleTrackerRightNew.x) * Mathf.Rad2Deg, Mathf.Asin(SaccadeGazeAngleTrackerRightNew.y) * Mathf.Rad2Deg);
+        totalAngles = new Vector2(Mathf.Asin(SaccadeGazeAngleTrackerRightOld.x) * Mathf.Rad2Deg, Mathf.Asin(SaccadeGazeAngleTrackerRightOld.y) * Mathf.Rad2Deg);
         headsetAngles = new Vector2(wrapAngle(mainCamera.transform.rotation.eulerAngles.y), -wrapAngle(mainCamera.transform.rotation.eulerAngles.x));
 
         if (angleDistance > minimalValidSaccadeDistance)
@@ -109,15 +132,30 @@ public class RotationMeasurement : FOVEBehavior
 
 
 
-                if(Mathf.Abs(xAngle) > Mathf.Abs(3*yAngle) || (Mathf.Abs(yAngle) > Mathf.Abs(xAngle) && (Mathf.Abs(SaccadeGazeAngleTrackerRightNew.x*Mathf.Rad2Deg) > 8*saccadePath.horizontalAngle)))
+                if(Mathf.Abs(xAngle) > Mathf.Abs(3*yAngle) || (Mathf.Abs(yAngle) > Mathf.Abs(xAngle) && (Mathf.Abs(SaccadeGazeAngleTrackerRightNew.x*Mathf.Rad2Deg) > 4*saccadePath.horizontalAngle)))
                 {
-                    pattern1Saccade += 1;
-                    Msg("Pattern 1 saccade");
+                    pattern1SaccadeTotal += 1;
+                    pattern1Saccade = 1;
                 }
                 else
                 {
-                    Msg("No pattern saccade");
+                    pattern1Saccade = 0;
                 }
+
+                if (Mathf.Sin(totalAngles.x/totalAngles.y) < 0.15f+ Mathf.Sin(totalAnglesOld.x/totalAnglesOld.y) || Mathf.Sin(totalAngles.x / totalAngles.y) > Mathf.Sin(totalAnglesOld.x / totalAnglesOld.y) - 0.15f || (Mathf.Abs(totalAngles.magnitude - totalAnglesOld.magnitude) > 10 && Mathf.Min(totalAngles.magnitude, totalAnglesOld.magnitude) < 10))
+                {
+                    pattern2SaccadeTotal += 1;
+                    pattern2Saccade = 1;
+                }
+                else
+                {
+                    pattern2Saccade = 0;
+                }
+            }
+            else
+            {
+                pattern1Saccade = 0;
+                pattern2Saccade = 0;
             }
         }
     }
@@ -136,6 +174,9 @@ public class RotationMeasurement : FOVEBehavior
 
             header += "Head_Rotation_x" + delimiter;
             header += "Head_Rotation_y" + delimiter;
+
+            header += "Left-Right-Saccade" + delimiter;
+            header += "Radial_Saccade" + delimiter;
 
             //header += "SaccadeMagnitude" + delimiter;
             //header += "SaccadeHorizontalAngle" + delimiter;
@@ -179,6 +220,9 @@ public class RotationMeasurement : FOVEBehavior
 
             datasetLine += headsetAngles.x + delimiter;
             datasetLine += headsetAngles.y + delimiter;
+
+            datasetLine += pattern1Saccade + delimiter;
+            datasetLine += pattern2Saccade + delimiter;
         }
         // tracked game object's position
         if (savePosition)

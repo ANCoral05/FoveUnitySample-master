@@ -43,6 +43,8 @@ public class TexturePaint : FOVEBehavior
     public TextMesh textScore;
     public GameObject goal;
     public bool finished;
+    private ManagerScript manager;
+    public bool searchFinished;
 
     // ---------------------------------
     private PaintableTexture albedo;
@@ -80,7 +82,8 @@ public class TexturePaint : FOVEBehavior
             format = RenderTextureFormat.ARGB32,
         };
 
-
+        //Alex
+        manager = GameObject.FindGameObjectWithTag("Manager").GetComponent<ManagerScript>();
 
         meshMaterial.SetTexture(albedo.id, albedo.runTimeTexture);
         meshMaterial.SetTexture(metalic.id, metalicGlossMapCombined);
@@ -121,9 +124,14 @@ public class TexturePaint : FOVEBehavior
 
         #region MyAddon (added by Alex)
 
+        if(goal == null)
+        {
+            goal = GameObject.FindGameObjectWithTag("goal");
+        }
+
         float distanceGoal = Vector3.Magnitude(mainC.transform.position - goal.transform.position);
 
-        if (Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.T) || distanceGoal < 3)
+        if (Input.GetKeyDown(KeyCode.R) || Input.GetKeyDown(KeyCode.T) || ((distanceGoal < 3 || searchFinished) && !finished))
         {
             Texture mainTexture = meshGameobject.GetComponent<Renderer>().material.mainTexture;
 
@@ -168,7 +176,7 @@ public class TexturePaint : FOVEBehavior
                 print(totalPercentage.ToString("F2") + "% of the visual field were covered in total, " + lastThreeSecondPercentage.ToString("F2") + "% within the last 3 seconds.");
             RenderTexture.active = currentRT;
 
-            if (Input.GetKeyDown(KeyCode.T) || ((distanceGoal < 3) && !finished))
+            if (Input.GetKeyDown(KeyCode.T) || ((distanceGoal < 3 || searchFinished) && !finished))
             {
                 //pngTex.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
                 //pngTex.Apply();
@@ -176,7 +184,8 @@ public class TexturePaint : FOVEBehavior
                 File.WriteAllBytes(rotationMeasurement.directory + "SavedScreen" + System.DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".png", bytes);
                 //heatmapVisualization.material.mainTexture = pngTex;
 
-                canvasScore.SetActive(true);
+                if(!searchFinished)
+                    canvasScore.SetActive(true);
 
                 for (int j = 0; j < averageGazeArea.Count; j++)
                 {

@@ -5,7 +5,7 @@ public class LookAtTarget : FOVEBehavior
 {
     public Collider my_collider;
 
-    public NewSetNumbers NewSetNumbers;
+    public NewSetNumbers newSetNumbers;
 
     public float TimeCounter = 0.4f;
 
@@ -23,6 +23,8 @@ public class LookAtTarget : FOVEBehavior
         audioSource = GameObject.FindGameObjectWithTag("AudioSourceBling").GetComponent<AudioSource>();
 
         cam = GameObject.FindObjectOfType<Camera>();
+
+        newSetNumbers = FindObjectOfType<NewSetNumbers>();
     }
 
     // Update is called once per frame
@@ -45,12 +47,15 @@ public class LookAtTarget : FOVEBehavior
 
         transform.localScale = new Vector3(0.04f + 0.01f * (0.4f - TimeCounter), 0.04f + 0.01f * (0.4f - TimeCounter), 0.04f + 0.01f * (0.4f - TimeCounter));
 
-        if (TimeCounter <= 0 && int.Parse(GetComponent<TextMesh>().text) == GameObject.Find("Manager").GetComponent<NewSetNumbers>().TargetNumber)
-        {
-            audioSource.PlayOneShot(audioClip);
+        //if ((FoveInterface.Gazecast(my_collider) && Input.GetKeyDown(KeyCode.UpArrow)) && int.Parse(GetComponent<TextMesh>().text) == GameObject.Find("Manager").GetComponent<NewSetNumbers>().TargetNumber)
+        //{
+        //    audioSource.PlayOneShot(audioClip);
 
-            gameObject.SetActive(false);
-        }
+        //    newSetNumbers.targetPosition.Add(transform.position);
+        //    newSetNumbers.targetTime.Add(Time.time - newSetNumbers.startTime);
+
+        //    gameObject.SetActive(false);
+        //}
         //GetComponent<SphereCollider>().radius = 2 * 3.141f * Vector3.Distance(cam.transform.position, transform.position) * 1.1f / 360 * 80;
     }
 }

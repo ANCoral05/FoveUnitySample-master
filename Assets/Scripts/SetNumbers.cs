@@ -50,6 +50,10 @@ public class SetNumbers : FOVEBehavior
 
     public SaveOnLoad saveOnLoad;
 
+    public int averageCorrectTargets = 0;
+
+    private int currentCorrectTargets;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -114,7 +118,7 @@ public class SetNumbers : FOVEBehavior
 
             audioSourceBling.PlayOneShot(loaded);
 
-            print("before" + Time.realtimeSinceStartup * 1000);
+            //print("before" + Time.realtimeSinceStartup * 1000);
 
             //placement = Random.insideUnitCircle;
 
@@ -126,6 +130,8 @@ public class SetNumbers : FOVEBehavior
 
             //    TargetText.text = Random.Range(0, 10).ToString();
             //}
+            if(averageCorrectTargets == 0)
+                averageCorrectTargets = Random.Range(2, 5);
 
             InvokeRepeating("PlaceNumbers", 0, 0.001f);
 
@@ -135,7 +141,7 @@ public class SetNumbers : FOVEBehavior
             {
                 CancelInvoke("PlaceNumbers");
 
-                print("after" + Time.realtimeSinceStartup * 1000);
+                //print("after" + Time.realtimeSinceStartup * 1000);
             }
             if (targets.Length == TargetAmount)
             {
@@ -184,7 +190,17 @@ public class SetNumbers : FOVEBehavior
             {
                 Instantiate(TargetText, Screen.position + new Vector3(0, placement.x * fieldScale*1.4f, placement.y * fieldScale*1.4f), Quaternion.Euler(0, 90, 0));
 
-                TargetText.text = Random.Range(0, 10).ToString();
+                if (currentCorrectTargets < averageCorrectTargets)
+                {
+                    TargetText.text = averageCorrectTargets.ToString();
+                }
+                else
+                {
+                    TargetText.text = Random.Range(0, 10).ToString();
+
+                    while(TargetText.text == averageCorrectTargets.ToString())
+                        TargetText.text = Random.Range(0, 10).ToString();
+                }
             }
         }
     }

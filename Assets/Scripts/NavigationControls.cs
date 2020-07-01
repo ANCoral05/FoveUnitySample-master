@@ -50,7 +50,7 @@ public class NavigationControls : MonoBehaviour
                 realRotateTime = rotateTime;
         }
 
-        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
+        if ((Input.GetKey(KeyCode.W) || Input.GetMouseButton(0)) || Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D))
         {
             if (realWalkingSpeed < walkingSpeed)
                 realWalkingSpeed += Time.deltaTime * acceleration;
@@ -65,7 +65,7 @@ public class NavigationControls : MonoBehaviour
                 realWalkingSpeed = 0;
         }
                 
-        if (Input.GetKey(KeyCode.W))
+        if (Input.GetKey(KeyCode.W) || Input.GetMouseButton(0))
         {
             navigationMap.transform.Translate(Time.deltaTime * realWalkingSpeed * (Mathf.Cos(rotateObject.transform.eulerAngles.y*Mathf.Deg2Rad)*walkingDirection + Mathf.Sin(rotateObject.transform.eulerAngles.y*Mathf.Deg2Rad)*leftDirection));
         }

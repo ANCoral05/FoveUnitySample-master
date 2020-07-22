@@ -28,15 +28,15 @@ public class TileSpawner : MonoBehaviour
     public List<string> tileNames;
     public List<string> obstacleNames;
 
+    public RotationMeasurement rotationMeasurement;
+
     public int tileCounter;
     // Start is called before the first frame update
     void Start()
     {
         spawner = GameObject.FindGameObjectWithTag("TileSpawner");
 
-        directory = "Assets/Resources/Participant_" + participantNumber.ToString() + "_Date_" + System.DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + "/";
-        Directory.CreateDirectory(directory);
-        WriteHeader();
+        rotationMeasurement = GameObject.FindObjectOfType<RotationMeasurement>();
     }
 
     // Update is called once per frame
@@ -75,6 +75,10 @@ public class TileSpawner : MonoBehaviour
             tile = Instantiate(goal, spawner.transform.position, spawner.transform.rotation, environment.transform);
 
             tileNames.Add("goal");
+
+            directory = rotationMeasurement.directory;
+
+            WriteHeader();
 
             goal = null;
         }

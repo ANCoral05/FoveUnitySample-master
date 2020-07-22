@@ -90,9 +90,12 @@ public class NewSetNumbers : FOVEBehavior
 
     public float endTime;
 
+    public Controls controls;
+
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
+        controls = new Controls();
 
         //saveOnLoad = FindObjectOfType<SaveOnLoad>();
     }
@@ -219,20 +222,20 @@ public class NewSetNumbers : FOVEBehavior
 
             GameObject[] targets = GameObject.FindGameObjectsWithTag("TargetNumber");
 
-            if (Input.GetKeyDown(KeyCode.UpArrow) && spottedTargets < 4)
+            if (controls.Search.Up.triggered && spottedTargets < 4)
             {
                 audioSource.PlayOneShot(upClip);
 
                 spottedTargets += 1;
             }
 
-            if (Input.GetKeyDown(KeyCode.DownArrow) && spottedTargets > 0)
+            if (controls.Search.Down.triggered && spottedTargets > 0)
             {
                 spottedTargets -= 1;
 
                 audioSource.PlayOneShot(downClip);
             }
-            if (Input.GetKeyDown(KeyCode.RightArrow) && spottedTargets >= 2)
+            if (controls.Search.Next.triggered && spottedTargets >= 2)
             {
                 foreach (GameObject target in targets) GameObject.Destroy(target);
 
@@ -387,5 +390,15 @@ public class NewSetNumbers : FOVEBehavior
             sw.WriteLine(datasetLine);
         }
         sw.Close();
+    }
+
+    private void OnEnable()
+    {
+        controls.Search.Enable();
+    }
+
+    private void OnDisable()
+    {
+        controls.Search.Disable();
     }
 }

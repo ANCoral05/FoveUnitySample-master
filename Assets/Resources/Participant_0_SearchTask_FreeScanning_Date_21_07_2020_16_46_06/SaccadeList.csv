@@ -1,0 +1,4 @@
+Saccade_Number;Start_Time;StartPosition_x;StartPosition_y;EndPosition_x;EndPosition_y;Saccade_Duration;Saccade_Magnitude;messages;
+1;0.020;70.48;-19.52;0.000;-35.915;0.333;72.36;
+2;0.501;9.87;-38.57;19.550;-69.856;0.067;32.75;
+3;0.761;45.90;-0.34;4.296;-0.321;0.032;41.60;

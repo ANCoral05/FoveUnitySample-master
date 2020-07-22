@@ -26,6 +26,9 @@ public class DistanceFromSaccadePathSound : FOVEBehavior
     [Range(1, 20)]
     public int verticalAngle;
 
+    [Range(1, 20)]
+    public int breakPoint;
+
     [Range(1, 100)]
     public int radialPatternRadius;
 
@@ -85,7 +88,8 @@ public class DistanceFromSaccadePathSound : FOVEBehavior
                 for (int i = 0; i < stepNumber; i++)
                 {
                     //coordinates = new Vector2((100-3*verticalAngle) + verticalAngle * Mathf.Floor(i / 10), (Mathf.Floor(i / 10) % 2) * (9*horizontalAngle+(i - Mathf.Floor(i / 10)) * horizontalAngle) + (Mathf.Floor(1 + i / 10) % 2) * (9*horizontalAngle - (i - (Mathf.Floor(i / 10))) * horizontalAngle));
-                    coordinates = new Vector2((100 - 3 * verticalAngle) + verticalAngle * Mathf.Floor(i / 10), (Mathf.Floor(i / 10) % 2) * ((90 - 4.5f * horizontalAngle) + (i - Mathf.Floor(i / 10) * 10) * horizontalAngle) + (Mathf.Floor(1 + i / 10) % 2) * (90 + (4.5f * horizontalAngle) - (i - (Mathf.Floor(i / 10) * 10)) * horizontalAngle));
+                    //coordinates = new Vector2((100 - 3 * verticalAngle) + verticalAngle * Mathf.Floor(i / 10), (Mathf.Floor(i / 10) % 2) * ((90 - 4.5f * horizontalAngle) + (i - Mathf.Floor(i / 10) * 10) * horizontalAngle) + (Mathf.Floor(1 + i / 10) % 2) * (90 + (4.5f * horizontalAngle) - (i - (Mathf.Floor(i / 10) * 10)) * horizontalAngle));
+                    coordinates = new Vector2((100 - 3 * verticalAngle) + verticalAngle * Mathf.Floor(i / breakPoint), (Mathf.Floor(i / breakPoint) % 2) * ((90f - ((0.35f + 0.01f * breakPoint) * breakPoint) * horizontalAngle) + (i - Mathf.Floor(i / breakPoint) * breakPoint) * horizontalAngle) + (Mathf.Floor(1 + i / breakPoint) % 2) * (90f + (((0.35f+0.01f*breakPoint) * breakPoint) * horizontalAngle) - (i - (Mathf.Floor(i / breakPoint) * breakPoint)) * horizontalAngle));
 
 
                     positionVector[i] = new Vector3(

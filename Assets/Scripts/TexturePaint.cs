@@ -36,14 +36,22 @@ public class TexturePaint : FOVEBehavior
     public RotationMeasurement rotationMeasurement;
     public PlayerCollisionCounter collisionCounter;
     public float totalPercentage;
+    private int lastOneSecondPixels;
     private int lastThreeSecondPixels;
+    private int lastFiveSecondPixels;
+    private int lastTenSecondPixels;
+    public float lastOneSecondPercentage;
     public float lastThreeSecondPercentage;
+    public float lastFiveSecondPercentage;
+    public float lastTenSecondPercentage;
+    private float captureTimer;
     //public MeshRenderer heatmapVisualization;
     public GameObject canvasScore;
     public TextMesh textScore;
     public GameObject goal;
     public bool finished;
     private ManagerScript manager;
+    public bool startMeasurement;
     public bool searchFinished;
 
     // ---------------------------------
@@ -54,8 +62,14 @@ public class TexturePaint : FOVEBehavior
     public RawImage hue;
     [Range(1,100), Tooltip("Decides the percentage of pixels read out when calculating covered area.")]
     public int readSteps;
-    public List<float> averageGazeArea;
-    public float averageGazeAreaNumber;
+    public List<float> averageGazeAreaOne;
+    public List<float> averageGazeAreaThree;
+    public List<float> averageGazeAreaFive;
+    public List<float> averageGazeAreaTen;
+    public float averageGazeAreaNumberOne;
+    public float averageGazeAreaNumberThree;
+    public float averageGazeAreaNumberFive;
+    public float averageGazeAreaNumberTen;
     // ======================================================================================================================
     // INITIALIZE -------------------------------------------------------------------
 
@@ -136,8 +150,67 @@ public class TexturePaint : FOVEBehavior
             Texture mainTexture = meshGameobject.GetComponent<Renderer>().material.mainTexture;
 
             Texture2D texture2D = new Texture2D(mainTexture.width, mainTexture.height, TextureFormat.RGBA32, false);
-        
+
             //Texture2D pngTex = new Texture2D(mainTexture.width, mainTexture.height, TextureFormat.RGBA32, false);
+
+            RenderTexture currentRT = RenderTexture.active;
+
+            RenderTexture renderTexture = new RenderTexture(mainTexture.width, mainTexture.height, 32);
+
+            Graphics.Blit(mainTexture, renderTexture);
+
+            RenderTexture.active = renderTexture;
+
+            texture2D.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+            texture2D.Apply();
+
+            if (Input.GetKeyDown(KeyCode.T) || ((distanceGoal < 3 || searchFinished) && !finished))
+            {
+                //pngTex.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+                //pngTex.Apply();
+                byte[] bytes = texture2D.EncodeToPNG();
+                File.WriteAllBytes(rotationMeasurement.directory + "SavedScreen" + System.DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".png", bytes);
+                //heatmapVisualization.material.mainTexture = pngTex;
+
+                if (!searchFinished)
+                    canvasScore.SetActive(true);
+
+                for (int j = 0; j < averageGazeAreaOne.Count; j++)
+                {
+                    averageGazeAreaNumberOne += averageGazeAreaOne[j];
+                }
+                for (int j = 0; j < averageGazeAreaThree.Count; j++)
+                {
+                    averageGazeAreaNumberThree += averageGazeAreaThree[j];
+                }
+                for (int j = 0; j < averageGazeAreaFive.Count; j++)
+                {
+                    averageGazeAreaNumberFive += averageGazeAreaFive[j];
+                }
+                for (int j = 0; j < averageGazeAreaTen.Count; j++)
+                {
+                    averageGazeAreaNumberTen += averageGazeAreaTen[j];
+                }
+
+                averageGazeAreaNumberOne = averageGazeAreaNumberOne / averageGazeAreaOne.Count;
+                averageGazeAreaNumberThree = averageGazeAreaNumberThree / averageGazeAreaThree.Count;
+                averageGazeAreaNumberFive = averageGazeAreaNumberFive / averageGazeAreaFive.Count;
+                averageGazeAreaNumberTen = averageGazeAreaNumberTen / averageGazeAreaTen.Count;
+
+
+                textScore.text = "Kollisionen: " + collisionCounter.obstacleCollision + "\n Zeit: " + Time.time.ToString("F2") + "s \n Durchschnittliche Sehfläche: " + averageGazeAreaNumberThree.ToString("F2") + "% \n Gesamte Sehfläche: " + totalPercentage.ToString("F2") + "%";
+
+                finished = true;
+            }
+
+            RenderTexture.active = currentRT;
+        }
+
+        if (Time.time > captureTimer && startMeasurement)
+        {
+            Texture mainTexture = meshGameobject.GetComponent<Renderer>().material.mainTexture;
+
+            Texture2D texture2D = new Texture2D(mainTexture.width, mainTexture.height, TextureFormat.RGBA32, false);
 
             RenderTexture currentRT = RenderTexture.active;
 
@@ -152,53 +225,59 @@ public class TexturePaint : FOVEBehavior
 
             Color[] pixels = texture2D.GetPixels();
 
+            lastOneSecondPixels = 0;
             lastThreeSecondPixels = 0;
-           
+            lastFiveSecondPixels = 0;
+            lastTenSecondPixels = 0;
+
             colorPercentage = 0;
 
-            for (int i = 0; i < pixels.Length; i += (100/readSteps))
+            for (int i = 0; i < pixels.Length; i += (100 / readSteps))
             {
                 if (pixels[i].r + pixels[i].g > 0.1f) // && pixels[i].b < 0.1f)
                 {
                     colorPercentage += 1;
                 }
-                if (pixels[i].b > Mathf.Max(3f/256f, (Time.time-3)/256f))
+                if (pixels[i].b > (Time.time - 1) / 256f && Time.time > 1)
+                {
+                    lastOneSecondPixels += 1;
+                }
+                if (pixels[i].b > (Time.time - 3) / 256f && Time.time > 3)
                 {
                     lastThreeSecondPixels += 1;
                 }
+                if (pixels[i].b > (Time.time - 5) / 256f && Time.time > 5)
+                {
+                    lastFiveSecondPixels += 1;
+                }
+                if (pixels[i].b > (Time.time - 10) / 256f && Time.time > 10)
+                {
+                    lastTenSecondPixels += 1;
+                }
                 //print("Pixel color " + pixels[i]);
-            }
 
-            totalPercentage = colorPercentage * 100.00f / (pixels.Length/(100.00f/readSteps));
-            lastThreeSecondPercentage = lastThreeSecondPixels * 100.00f / (pixels.Length/(100.00f / readSteps));
-            averageGazeArea.Add(lastThreeSecondPercentage);
-            if(!finished)
+            }
+            totalPercentage = colorPercentage * 100.00f / (pixels.Length / (100.00f / readSteps));
+            lastOneSecondPercentage = lastOneSecondPixels * 100.00f / (pixels.Length / (100.00f / readSteps));
+            lastThreeSecondPercentage = lastThreeSecondPixels * 100.00f / (pixels.Length / (100.00f / readSteps));
+            lastFiveSecondPercentage = lastFiveSecondPixels * 100.00f / (pixels.Length / (100.00f / readSteps));
+            lastTenSecondPercentage = lastTenSecondPixels * 100.00f / (pixels.Length / (100.00f / readSteps));
+            if(Time.time > 1)
+                averageGazeAreaOne.Add(lastOneSecondPercentage);
+            if (Time.time > 3)
+                averageGazeAreaThree.Add(lastThreeSecondPercentage);
+            if (Time.time > 5)
+                averageGazeAreaFive.Add(lastFiveSecondPercentage);
+            if (Time.time > 10)
+                averageGazeAreaTen.Add(lastTenSecondPercentage);
+            if (!finished)
                 print(totalPercentage.ToString("F2") + "% of the visual field were covered in total, " + lastThreeSecondPercentage.ToString("F2") + "% within the last 3 seconds.");
             RenderTexture.active = currentRT;
 
-            if (Input.GetKeyDown(KeyCode.T) || ((distanceGoal < 3 || searchFinished) && !finished))
-            {
-                //pngTex.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
-                //pngTex.Apply();
-                byte[] bytes = texture2D.EncodeToPNG();
-                File.WriteAllBytes(rotationMeasurement.directory + "SavedScreen" + System.DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + ".png", bytes);
-                //heatmapVisualization.material.mainTexture = pngTex;
-
-                if(!searchFinished)
-                    canvasScore.SetActive(true);
-
-                for (int j = 0; j < averageGazeArea.Count; j++)
-                {
-                    averageGazeAreaNumber += averageGazeArea[j];
-                }
-
-                averageGazeAreaNumber = averageGazeAreaNumber / averageGazeArea.Count;
-
-                textScore.text = "Kollisionen: " + collisionCounter.obstacleCollision + "\n Zeit: " + Time.time.ToString("F2") + "s \n Durchschnittliche Sehfläche: " + averageGazeAreaNumber.ToString("F2") + "% \n Gesamte Sehfläche: " + totalPercentage.ToString("F2") + "%";
-
-                finished = true;
-            }
+            captureTimer = Time.time + 1;
         }
+
+        
 
         #endregion
 

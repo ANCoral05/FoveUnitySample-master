@@ -101,6 +101,11 @@ public class NewSetNumbers : FOVEBehavior
     }
 
 
+    private void Start()
+    {
+        startTime = 0;
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -186,7 +191,7 @@ public class NewSetNumbers : FOVEBehavior
             //}
 
             if (averageCorrectTargets == 0)
-                averageCorrectTargets = UnityEngine.Random.Range(2, 5);
+                averageCorrectTargets = UnityEngine.Random.Range(0, 6);
 
             InvokeRepeating("PlaceNumbers", 0, 0.001f);
 
@@ -220,9 +225,11 @@ public class NewSetNumbers : FOVEBehavior
             if (startTime == 0)
                 startTime = Time.time;
 
+            texturePainter.startMeasurement = true;
+
             GameObject[] targets = GameObject.FindGameObjectsWithTag("TargetNumber");
 
-            if (controls.Search.Up.triggered && spottedTargets < 4)
+            if (controls.Search.Up.triggered && spottedTargets < 5)
             {
                 audioSource.PlayOneShot(upClip);
 
@@ -235,7 +242,7 @@ public class NewSetNumbers : FOVEBehavior
 
                 audioSource.PlayOneShot(downClip);
             }
-            if (controls.Search.Next.triggered && spottedTargets >= 2)
+            if (controls.Search.Next.triggered || Time.time > startTime + 30f)
             {
                 foreach (GameObject target in targets) GameObject.Destroy(target);
 
@@ -272,7 +279,9 @@ public class NewSetNumbers : FOVEBehavior
                 timeTracker = Time.time;
 
             texturePainter.searchFinished = true;
-            
+
+            texturePainter.startMeasurement = false;
+
             directory = rotationMeasurement.directory;
 
             Directory.CreateDirectory(directory);
@@ -346,7 +355,10 @@ public class NewSetNumbers : FOVEBehavior
         header += "actualTargets" + delimiter;
         header += "spottedTargets" + delimiter;
         header += "totalArea" + delimiter;
-        header += "averageArea" + delimiter;
+        header += "averageArea1" + delimiter;
+        header += "averageArea3" + delimiter;
+        header += "averageArea5" + delimiter;
+        header += "averageArea10" + delimiter;
 
         sw.WriteLine(header);
         sw.Close();
@@ -365,7 +377,10 @@ public class NewSetNumbers : FOVEBehavior
         datasetLine += averageCorrectTargets + delimiter;
         datasetLine += + spottedTargets + delimiter;
         datasetLine += texturePainter.totalPercentage.ToString("F2") + delimiter;
-        datasetLine += texturePainter.averageGazeAreaNumber.ToString("F2") + delimiter;
+        datasetLine += texturePainter.averageGazeAreaNumberOne.ToString("F2") + delimiter;
+        datasetLine += texturePainter.averageGazeAreaNumberThree.ToString("F2") + delimiter;
+        datasetLine += texturePainter.averageGazeAreaNumberFive.ToString("F2") + delimiter;
+        datasetLine += texturePainter.averageGazeAreaNumberTen.ToString("F2") + delimiter;
         trackingDataQueue.Enqueue(datasetLine);
 
         //for (int i = 0; i < spottedTargets; i++)

@@ -117,6 +117,8 @@ public class RotationMeasurement : FOVEBehavior
     private string visualTask;
     private string scanningPattern;
 
+    public AudioSource audioSource;
+
     private static float wrapAngle(float angle)
     {
         angle %= 360;
@@ -215,7 +217,7 @@ public class RotationMeasurement : FOVEBehavior
 
             Vector2 headsetNormedVector = totalAngles - headsetAngles;
 
-            if (saccadeVector.magnitude / (Time.time - eyeMovementFrameList[saccadeStart].Time) > minimalValidSaccadeDistance)
+            if (saccadeVector.magnitude / (Time.time - eyeMovementFrameList[saccadeStart].Time) > minimalValidSaccadeDistance && angleDistance > 3)
             {
 
                 if (Mathf.Abs(saccadeVector.x) > Mathf.Abs(3 * saccadeVector.y) || (Mathf.Abs(saccadeVector.y) > Mathf.Abs(saccadeVector.x) && (Mathf.Abs(SaccadeGazeAngleTrackerRightNew.x * Mathf.Rad2Deg) > 4 * saccadePath.horizontalAngle)))
@@ -231,11 +233,15 @@ public class RotationMeasurement : FOVEBehavior
 
                 float normedDistanceEnd = (eyeMovementFrameList[frameNumber - 1].Angles - eyeMovementFrameList[frameNumber - 1].HeadsetAngles).magnitude;
 
-                if ((normedDistanceStart < 15 && normedDistanceEnd > normedDistanceStart + 5) || normedDistanceEnd < 15 && normedDistanceStart > normedDistanceEnd + 5)
+                if ((normedDistanceStart < 15 && normedDistanceEnd > normedDistanceStart + 0.666f * angleDistance) || normedDistanceEnd < 15 && normedDistanceStart > normedDistanceEnd + 0.666f*angleDistance)
                 {
                     saccade2Tracker = 1;
 
                     pattern2SaccadeTotal += 1;
+
+                    //audioSource.Play();
+
+                    //print(pattern2SaccadeTotal);
                 }
                 else
                     saccade2Tracker = 0;
@@ -248,7 +254,7 @@ public class RotationMeasurement : FOVEBehavior
 
         float normedDistanceStart2 = (totalAngles - headsetAngles).magnitude;
 
-        print(headsetAngles + " - " + normedDistanceStart2);
+        //print(headsetAngles + " - " + normedDistanceStart2);
 
         SaccadeGazeAngleTrackerRightOld = SaccadeGazeAngleTrackerRightNew;
         QueueTrackingData();

@@ -68,6 +68,8 @@ public class DistanceFromSaccadePathSound : FOVEBehavior
 
     public SaveOnLoad saveOnLoad;
 
+    public TexturePaint texturePaint;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -160,177 +162,168 @@ public class DistanceFromSaccadePathSound : FOVEBehavior
     // Update is called once per frame
     void Update()
     {
-        if (saveOnLoad.stage == 0 && scanningPattern != 0)
-        {
-            if (startTime == 0 && currentSphere > 0)
-            {
-                startTime = Time.time;
+        //    if (saveOnLoad.stage == 0 && scanningPattern != 0)
+        //    {
+        //        if (startTime == 0 && currentSphere > 0)
+        //        {
+        //            startTime = Time.time;
 
-                audioSource.Play();
+        //            audioSource.Play();
+        //        }
+
+        LineRenderer lineRenderer = GetComponent<LineRenderer>();
+
+        for (int i = currentSphere; i < stepNumber; i++)
+        {
+            lineRenderer.SetPosition(i - currentSphere, positionVector[i - currentSphere]);
+
+            ObjectVector = (positionVector[i] - cam.transform.position);
+
+            angle = Vector3.Angle(ObjectVector, FoveInterface.GetGazeRays().right.direction);
+
+            if (angle < 5)
+            {
+                sphereList[i].GetComponent<Renderer>().material.color = new Color(0.6f, 0.6f, 0.6f, 1);
             }
 
-            LineRenderer lineRenderer = GetComponent<LineRenderer>();
-
-            for (int i = currentSphere; i < stepNumber; i++)
-            {
-                lineRenderer.SetPosition(i - currentSphere, positionVector[i - currentSphere]);
-            }
-
-            for (int i = currentSphere; i < Mathf.Min(currentSphere + 3, stepNumber); i++)
-            {
-                ObjectVector = (positionVector[i] - cam.transform.position);
-
-                //Vector3 ObjectVectorOld = (positionVector[Mathf.Max(0,currentSphere - 1)] - cam.transform.position);
-
-                //Vector2 xAngle = new Vector2(positionVector[currentSphere].x - cam.transform.position.x, positionVector[currentSphere].z - cam.transform.position.z);
-
-                //Vector2 yAngle = new Vector2(positionVector[currentSphere].y - cam.transform.position.y, positionVector[currentSphere].z - cam.transform.position.z);
-
-                //XYAngles = new Vector2(Vector2.SignedAngle(new Vector2(FoveInterface.GetGazeRays().right.direction.x, FoveInterface.GetGazeRays().right.direction.z), xAngle), Vector2.SignedAngle(new Vector2(FoveInterface.GetGazeRays().right.direction.y, FoveInterface.GetGazeRays().right.direction.z), yAngle));
-
-                angle = Vector3.Angle(ObjectVector, FoveInterface.GetGazeRays().right.direction);
-
-                //float angleOld = Vector3.Angle(ObjectVector, FoveInterface.GetGazeRays().right.direction);
-
-                if (angle < 5 && currentSphere < stepNumber)
-                {
-                    sphereList[i].GetComponent<Renderer>().material.color = new Color(0.6f, 0.6f, 0.6f, 1);
-
-                    sphereBool[i] = true;
-
-                    currentSphere = i + 1;
-
-                    sphereList[currentSphere].GetComponent<Renderer>().material.color = new Color(1, 0.3f, 0.3f, 1);
-                }
-            }
-
-            if (currentSphere == stepNumber)
-            {
-                endTime = Time.time;
-
-                for (int i = 0; i < stepNumber; i++)
-                {
-                    if (sphereBool[i])
-                        missedTargets += 1;
-                }
-
-                if (!missedTargetsCalled)
-                {
-                    OnFinishTask();
-                }
-
-                if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    saveOnLoad.stage += 1;
-
-                    SceneManager.LoadScene(0);
-                }
-            }
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && missedTargetsCalled && saveOnLoad.stage == 3)
+        if(Time.time < 20)
         {
-            saveOnLoad.stage += 1;
-
-            SceneManager.LoadScene(0);
+            texturePaint.searchFinished = true;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && saveOnLoad.stage == 2)
-        {
-            print("stage2");
-            endTime = Time.time;
-
-            audioSource.Play();
-
-            if (!missedTargetsCalled)
-                OnFinishTask();
-
-            saveOnLoad.stage += 1;
-        }
-
-        if (saveOnLoad.stage == 1)
-        {
-            if (Input.GetKeyDown(KeyCode.Space) && startTime == 0)
-            {
-                print("stage1");
-                startTime = Time.time;
-
-                audioSource.Play();
-
-                currentSphere = stepNumber - 1;
-
-                saveOnLoad.stage += 1;
-            }
-        }
-
-        if(saveOnLoad.stage == 5 && startTime == 0)
-        {
-            scoreCanvas.SetActive(false);
-
-            endTime = 0;
-
-            startTime = Time.time;
-
-            currentSphere = stepNumber - 1;
-
-        }
-
-        if(saveOnLoad.stage == 6 && endTime == 0)
-        {
-            endTime = Time.time;
-
-            audioSource.Play();
-
-            if (!missedTargetsCalled)
-                OnFinishTask();
-
-            startTime = 0;
-        }
-        //if(angle >= 10 && angleOld >= 10)
+        //for (int i = currentSphere; i < Mathf.Min(currentSphere + 3, stepNumber); i++)
         //{
-        //    audioSource.volume = Mathf.Min(angle * 0.03f, angleOld*0.03f);
-        //}
-        //else
-        //{
-        //    audioSource.volume = 0;
+        //    ObjectVector = (positionVector[i] - cam.transform.position);
+
+        //    angle = Vector3.Angle(ObjectVector, FoveInterface.GetGazeRays().right.direction);
+
+        //    if (angle < 5 && currentSphere < stepNumber)
+        //    {
+        //        sphereList[i].GetComponent<Renderer>().material.color = new Color(0.6f, 0.6f, 0.6f, 1);
+
+        //        sphereBool[i] = true;
+
+        //        currentSphere = i + 1;
+
+        //        sphereList[currentSphere].GetComponent<Renderer>().material.color = new Color(1, 0.3f, 0.3f, 1);
+        //    }
         //}
 
-        //audioSource.panStereo = -0.02f * XYAngles.x;
+        //        if (currentSphere == stepNumber)
+        //        {
+        //            endTime = Time.time;
 
-        //audioSource.pitch = 1 - 0.01f * XYAngles.y;
-    }
+        //            for (int i = 0; i < stepNumber; i++)
+        //            {
+        //                if (sphereBool[i])
+        //                    missedTargets += 1;
+        //            }
 
-    void OnFinishTask()
-    {
-        scoreCanvas.SetActive(true);
+        //            if (!missedTargetsCalled)
+        //            {
+        //                OnFinishTask();
+        //            }
 
-        //print("Missed targets: " + (stepNumber - missedTargets));
+        //            if (Input.GetKeyDown(KeyCode.Space))
+        //            {
+        //                saveOnLoad.stage += 1;
 
-        if (saveOnLoad.stage == 0)
-        {
-            if (scanningPattern == 1)
-                scoreText.text = "Genauigkeit: " + (100 * rotationMeasurementScript.pattern1Saccade / rotationMeasurementScript.saccadeNumber) + "% \n Benötigte Zeit: " + (endTime - startTime).ToString("F2") + "s \n Wahrgenommenes Sichtfeld: " + textureScript.totalPercentage + "% \n Drücken Sie die Leertaste und \n wiederholen sie das Augenbewegungsmuster.";
+        //                SceneManager.LoadScene(0);
+        //            }
+        //        }
+        //    }
 
-            if (scanningPattern == 2)
-                scoreText.text = "Genauigkeit: " + (100 * rotationMeasurementScript.pattern2Saccade / rotationMeasurementScript.saccadeNumber) + "% \n Benötigte Zeit: " + (endTime - startTime).ToString("F2") + "s";
+        //    if (Input.GetKeyDown(KeyCode.Space) && missedTargetsCalled && saveOnLoad.stage == 3)
+        //    {
+        //        saveOnLoad.stage += 1;
 
-            if (scanningPattern == 3)
-                scoreText.text = "Genauigkeit: " + (100 * rotationMeasurementScript.pattern1Saccade / rotationMeasurementScript.saccadeNumber) + "% \n Benötigte Zeit: " + (endTime - startTime).ToString("F2") + "s";
-        }
+        //        SceneManager.LoadScene(0);
+        //    }
 
-        if (saveOnLoad.stage == 2)
-        {
-            if (scanningPattern == 1)
-                scoreText.text = "Genauigkeit: " + (100 * rotationMeasurementScript.pattern1Saccade / rotationMeasurementScript.saccadeNumber) + "% \n Benötigte Zeit: " + (endTime - startTime).ToString("F2") + "s \n Wahrgenommenes Sichtfeld: " + textureScript.totalPercentage + "% \n Drücken Sie die Leertaste, \n um mit der Suchaufgabe fortzufahren.";
-        }
-        audioSource.Play();
+        //    if (Input.GetKeyDown(KeyCode.Space) && saveOnLoad.stage == 2)
+        //    {
+        //        print("stage2");
+        //        endTime = Time.time;
 
-        if(saveOnLoad.stage == 6)
-        {
-            if (scanningPattern == 1)
-                scoreText.text = "Alle Ziffern gefunden! \n Genauigkeit: " + (100 * rotationMeasurementScript.pattern1Saccade / rotationMeasurementScript.saccadeNumber) + "% \n Benötigte Zeit: " + (endTime - startTime).ToString("F2") + "s \n Wahrgenommenes Sichtfeld: " + textureScript.totalPercentage + "%";
-        }
+        //        audioSource.Play();
 
-        missedTargetsCalled = true;
+        //        if (!missedTargetsCalled)
+        //            OnFinishTask();
+
+        //        saveOnLoad.stage += 1;
+        //    }
+
+        //    if (saveOnLoad.stage == 1)
+        //    {
+        //        if (Input.GetKeyDown(KeyCode.Space) && startTime == 0)
+        //        {
+        //            print("stage1");
+        //            startTime = Time.time;
+
+        //            audioSource.Play();
+
+        //            currentSphere = stepNumber - 1;
+
+        //            saveOnLoad.stage += 1;
+        //        }
+        //    }
+
+        //    if(saveOnLoad.stage == 5 && startTime == 0)
+        //    {
+        //        scoreCanvas.SetActive(false);
+
+        //        endTime = 0;
+
+        //        startTime = Time.time;
+
+        //        currentSphere = stepNumber - 1;
+
+        //    }
+
+        //    if(saveOnLoad.stage == 6 && endTime == 0)
+        //    {
+        //        endTime = Time.time;
+
+        //        audioSource.Play();
+
+        //        if (!missedTargetsCalled)
+        //            OnFinishTask();
+
+        //        startTime = 0;
+        //    }
+        //}
+
+        //void OnFinishTask()
+        //{
+        //    scoreCanvas.SetActive(true);
+
+        //    if (saveOnLoad.stage == 0)
+        //    {
+        //        if (scanningPattern == 1)
+        //            scoreText.text = "Genauigkeit: " + (100 * rotationMeasurementScript.pattern1Saccade / rotationMeasurementScript.saccadeNumber) + "% \n Benötigte Zeit: " + (endTime - startTime).ToString("F2") + "s \n Wahrgenommenes Sichtfeld: " + textureScript.totalPercentage + "% \n Drücken Sie die Leertaste und \n wiederholen sie das Augenbewegungsmuster.";
+
+        //        if (scanningPattern == 2)
+        //            scoreText.text = "Genauigkeit: " + (100 * rotationMeasurementScript.pattern2Saccade / rotationMeasurementScript.saccadeNumber) + "% \n Benötigte Zeit: " + (endTime - startTime).ToString("F2") + "s";
+
+        //        if (scanningPattern == 3)
+        //            scoreText.text = "Genauigkeit: " + (100 * rotationMeasurementScript.pattern1Saccade / rotationMeasurementScript.saccadeNumber) + "% \n Benötigte Zeit: " + (endTime - startTime).ToString("F2") + "s";
+        //    }
+
+        //    if (saveOnLoad.stage == 2)
+        //    {
+        //        if (scanningPattern == 1)
+        //            scoreText.text = "Genauigkeit: " + (100 * rotationMeasurementScript.pattern1Saccade / rotationMeasurementScript.saccadeNumber) + "% \n Benötigte Zeit: " + (endTime - startTime).ToString("F2") + "s \n Wahrgenommenes Sichtfeld: " + textureScript.totalPercentage + "% \n Drücken Sie die Leertaste, \n um mit der Suchaufgabe fortzufahren.";
+        //    }
+        //    audioSource.Play();
+
+        //    if(saveOnLoad.stage == 6)
+        //    {
+        //        if (scanningPattern == 1)
+        //            scoreText.text = "Alle Ziffern gefunden! \n Genauigkeit: " + (100 * rotationMeasurementScript.pattern1Saccade / rotationMeasurementScript.saccadeNumber) + "% \n Benötigte Zeit: " + (endTime - startTime).ToString("F2") + "s \n Wahrgenommenes Sichtfeld: " + textureScript.totalPercentage + "%";
+        //    }
+
+        //    missedTargetsCalled = true;
     }
 }

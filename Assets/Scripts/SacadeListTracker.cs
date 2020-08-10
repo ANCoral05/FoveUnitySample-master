@@ -8,6 +8,7 @@ public class SacadeListTracker : MonoBehaviour
 {
     public RotationMeasurement rotationMeasurement;
     public ManagerScript manager;
+    public NewSetNumbers searchTaskScript;
     private string directory;
     private string visualTask;
     private string scanningPattern;

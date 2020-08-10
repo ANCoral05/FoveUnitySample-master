@@ -87,7 +87,9 @@ public class PlayerCollisionCounter : MonoBehaviour
 
         if(knockbackTimer > 0)
         {
-            environment.transform.Translate(Time.deltaTime * 3 * realWalkingSpeed * knockbackTimer * new Vector3(knockbackVector.x* -Mathf.Cos(mainEnvironment.transform.eulerAngles.y*Mathf.Deg2Rad)+ knockbackVector.z * -Mathf.Sin(mainEnvironment.transform.eulerAngles.y * Mathf.Deg2Rad), 0, knockbackVector.x * Mathf.Sin(mainEnvironment.transform.eulerAngles.y * Mathf.Deg2Rad) + knockbackVector.z * Mathf.Cos(mainEnvironment.transform.eulerAngles.y * Mathf.Deg2Rad)));
+            environment.transform.Translate(Time.deltaTime * 3 * realWalkingSpeed * knockbackTimer * new Vector3(knockbackVector.x, 0, knockbackVector.z));
+
+            //environment.transform.Translate(Time.deltaTime * 3 * realWalkingSpeed * knockbackTimer * new Vector3(knockbackVector.x* -Mathf.Cos(mainEnvironment.transform.eulerAngles.y*Mathf.Deg2Rad)+ knockbackVector.z * -Mathf.Sin(mainEnvironment.transform.eulerAngles.y * Mathf.Deg2Rad), 0, knockbackVector.x * Mathf.Sin(mainEnvironment.transform.eulerAngles.y * Mathf.Deg2Rad) + knockbackVector.z * Mathf.Cos(mainEnvironment.transform.eulerAngles.y * Mathf.Deg2Rad)));
 
             knockbackTimer -= Time.deltaTime;
 
@@ -102,6 +104,27 @@ public class PlayerCollisionCounter : MonoBehaviour
             obstacleCollision += 1;
 
             moving.Add(0);
+
+            position.Add(Vector3.zero - environment.transform.localPosition);
+
+            time.Add(Time.time);
+
+            audioSource.Play();
+
+            realWalkingSpeed = navigationControls.realWalkingSpeed;
+
+            knockbackVector = Vector3.Normalize(collision.contacts[0].point - transform.position);
+
+            knockbackTimer = 0.5f;
+
+            timer = 0;
+        }
+
+        if (collision.gameObject.tag == "UpperObstacle" && timer >= 0.1f)
+        {
+            obstacleCollision += 1;
+
+            moving.Add(2);
 
             position.Add(Vector3.zero - environment.transform.localPosition);
 
@@ -146,13 +169,19 @@ public class PlayerCollisionCounter : MonoBehaviour
         }
     }
 
+    public void OnApplicationQuit()
+    {
+        if(!save)
+            WriteTrackingData();
+    }
+
     void WriteHeader()
     {
         StreamWriter sw = new StreamWriter(directory + trackingFile);
         string header = "CollisionNumber" + delimiter;
         header += "CollisionPosition" + delimiter;
         header += "CollisionTime" + delimiter;
-        header += "CollisionType" + delimiter;
+        header += "CollisionType(0static,1moving,2high)" + delimiter;
 
         sw.WriteLine(header);
         sw.Close();
@@ -169,7 +198,10 @@ public class PlayerCollisionCounter : MonoBehaviour
 
         datasetLine = Time.time.ToString("F2") + delimiter;
         datasetLine += "totalGazeArea: " + texturePainter.totalPercentage.ToString("F2") + delimiter;
-        datasetLine += "averageGazeArea: " + texturePainter.averageGazeAreaNumber.ToString("F2") + delimiter;
+        datasetLine += "averageGazeArea1: " + texturePainter.averageGazeAreaNumberOne.ToString("F2") + delimiter;
+        datasetLine += "averageGazeArea3: " + texturePainter.averageGazeAreaNumberThree.ToString("F2") + delimiter;
+        datasetLine += "averageGazeArea5: " + texturePainter.averageGazeAreaNumberFive.ToString("F2") + delimiter;
+        datasetLine += "averageGazeArea10: " + texturePainter.averageGazeAreaNumberTen.ToString("F2") + delimiter;
         trackingDataQueue.Enqueue(datasetLine);
 
         for (int i = 0; i < obstacleCollision; i++)

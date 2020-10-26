@@ -211,14 +211,19 @@ public class RotationMeasurement : FOVEBehavior
         if (frameNumber > 1)
             newDirection = eyeMovementFrameList[frameNumber - 2].Angles - eyeMovementFrameList[frameNumber - 1].Angles;
 
-        if (isSaccade == 1 && saccadeStart != frameNumber - 1 && (angleDistance < minimalValidSaccadeDistance * Time.deltaTime || Vector2.Angle(oldDirection, newDirection) > 20f || Time.time - saccadeStart > 0.1f))
+        if (isSaccade == 1 && saccadeStart != frameNumber - 1 && (angleDistance < minimalValidSaccadeDistance * Time.deltaTime || Vector2.Angle(oldDirection, newDirection) > 30f || Time.time - saccadeStart > 0.1f))
         {
             Vector2 saccadeVector = new Vector2(eyeMovementFrameList[frameNumber -1].Angles.x - eyeMovementFrameList[saccadeStart].Angles.x, eyeMovementFrameList[frameNumber - 1].Angles.y - eyeMovementFrameList[saccadeStart].Angles.y);
 
             Vector2 headsetNormedVector = totalAngles - headsetAngles;
 
-            if (saccadeVector.magnitude / (Time.time - eyeMovementFrameList[saccadeStart].Time) > minimalValidSaccadeDistance && angleDistance > 3)
+            //float test = saccadeVector.magnitude / (eyeMovementFrameList[frameNumber-1].Time - eyeMovementFrameList[saccadeStart].Time);
+
+            //print("SaccadeStart: " + eyeMovementFrameList[saccadeStart].Time + "; SaccadeEnd: " + eyeMovementFrameList[frameNumber-1].Time + "; Velocity: " + test + "; Saccade Vector: " + saccadeVector.magnitude);
+
+            if (saccadeVector.magnitude / (eyeMovementFrameList[frameNumber - 1].Time - eyeMovementFrameList[saccadeStart].Time) > minimalValidSaccadeDistance && saccadeVector.magnitude > 1f)
             {
+                //audioSource.Play();
 
                 if (Mathf.Abs(saccadeVector.x) > Mathf.Abs(3 * saccadeVector.y) || (Mathf.Abs(saccadeVector.y) > Mathf.Abs(saccadeVector.x) && (Mathf.Abs(SaccadeGazeAngleTrackerRightNew.x * Mathf.Rad2Deg) > 4 * saccadePath.horizontalAngle)))
                 {

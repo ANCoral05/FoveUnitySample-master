@@ -1,0 +1,4 @@
+Frame_Number;Time;Total_Angles_x;Total_Angles_y;isSaccade;isSaccadeLeftRight;isSaccaderRadial;Head_Rotation_x;Head_Rotation_y;Head_Position;messages;
+1;0.000;70.47953;-19.52042;0;0;0;0;0;(0.0, 1.6, 0.0)
+2;0.020;0;-35.91512;1;1;1;0;0;(0.0, 1.6, 0.0)SaccadeStart;
+9;0.744;15.53773;-7.099638;1;0;1;11.42954;-3.507524;(-0.2, 1.6, 0.6)

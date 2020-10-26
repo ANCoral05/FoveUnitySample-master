@@ -73,6 +73,7 @@ public class PlayerCollisionCounter : MonoBehaviour
         if (!manager.radial && !manager.leftRight)
             scanningPattern = "_FreeScanning";
 
+        participantNumber = manager.participantNumber;
         directory = "Assets/Resources/Participant_" + participantNumber + visualTask + scanningPattern + "_Date_" + System.DateTime.Now.ToString("dd_MM_yyyy_HH_mm_ss") + "/";
         Directory.CreateDirectory(directory);
         WriteHeader();

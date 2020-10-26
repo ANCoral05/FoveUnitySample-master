@@ -1,0 +1,3 @@
+Saccade_Number;Start_Time;Left-Right_Saccade;Left-Right_Saccade_percentage;Radial_Saccade;Radial_Saccade_percentage;StartPosition_x;StartPosition_y;HeadsetNormedStartPosition_x;HeadsetNormedStartPosition_y;EndPosition_x;EndPosition_y;HeadsetNormedEndPosition_x;HeadsetNormedEndPosition_y;Saccade_Duration;Saccade_Magnitude;messages;
+1;381.938;0;0;0;0;-6.15;-37.84;2.68;-29.51;-19.095;-9.051;-12.240;-3.539;0.020;31.57;
+2;384.815;0;0;0;0;-9.66;-4.07;-4.90;8.48;-6.498;-2.506;-2.187;8.938;0.018;3.52;

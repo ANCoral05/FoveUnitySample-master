@@ -92,6 +92,8 @@ public class NewSetNumbers : FOVEBehavior
 
     public Controls controls;
 
+    private float waitForLag;
+
     // Start is called before the first frame update
     void Awake()
     {
@@ -104,6 +106,8 @@ public class NewSetNumbers : FOVEBehavior
     private void Start()
     {
         startTime = 0;
+
+        waitForLag = 0;
     }
 
     // Update is called once per frame
@@ -126,14 +130,21 @@ public class NewSetNumbers : FOVEBehavior
 
             //foreach (GameObject target in targets) GameObject.Destroy(target);
 
-            TargetNumber = UnityEngine.Random.Range(0, 10);
+            waitForLag += Time.deltaTime;
 
-            Infotext.GetComponent<TextMesh>().text = "Suche: \n" + TargetNumber;
+            Infotext.GetComponent<TextMesh>().text = "Weiter in \n" + (4-Mathf.RoundToInt(waitForLag)).ToString();
 
             //if(saveOnLoad.stage > 3)
             //    saveOnLoad.stage = 5;
 
-            step = 1;
+            if (waitForLag > 4)
+            {
+                step = 1;
+
+                TargetNumber = UnityEngine.Random.Range(0, 10);
+
+                Infotext.GetComponent<TextMesh>().text = "Suche: \n" + TargetNumber;
+            }
         }
 
         if (FoveInterface.Gazecast(StartingCollider) && step == 1)
@@ -229,20 +240,20 @@ public class NewSetNumbers : FOVEBehavior
 
             GameObject[] targets = GameObject.FindGameObjectsWithTag("TargetNumber");
 
-            if (controls.Search.Up.triggered && spottedTargets < 5)
+            if (controls.Search.Up.triggered)
             {
                 audioSource.PlayOneShot(upClip);
 
                 spottedTargets += 1;
             }
 
-            if (controls.Search.Down.triggered && spottedTargets > 0)
+            if (controls.Search.Down.triggered)
             {
                 spottedTargets -= 1;
 
                 audioSource.PlayOneShot(downClip);
             }
-            if (controls.Search.Next.triggered || Time.time > startTime + 30f)
+            if (controls.Search.Next.triggered || Time.time > startTime + 20f)
             {
                 foreach (GameObject target in targets) GameObject.Destroy(target);
 

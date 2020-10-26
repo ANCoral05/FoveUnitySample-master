@@ -1,0 +1,5 @@
+CollisionNumber;CollisionPosition;CollisionTime;CollisionType(0static,1moving,2high);
+56.92;totalGazeArea: 28.70;averageGazeArea1: 2.74;averageGazeArea3: 6.69;averageGazeArea5: 9.43;averageGazeArea10: 14.37;
+1;(3.7, 0.0, 9.3);12.8;0;
+2;(8.9, 0.0, 20.4);27.24;0;
+3;(6.3, 0.0, 26.2);40.88;0;

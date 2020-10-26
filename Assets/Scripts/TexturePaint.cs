@@ -134,7 +134,7 @@ public class TexturePaint : FOVEBehavior
         createMetalicGlossMap.SetTexture("_MainTex", metalic.runTimeTexture);
         Graphics.Blit(metalic.runTimeTexture, metalicGlossMapCombined, createMetalicGlossMap);
 
-        hue.color = new Color(1 - 0.033f * Time.time, 0.033f * Time.time, 1f/256f*Time.time);
+        hue.color = new Color(1 - 0.033f * Time.time, 0.033f * Time.time, 1f/256f*Time.timeSinceLevelLoad);
 
         #region MyAddon (added by Alex)
 
@@ -238,19 +238,19 @@ public class TexturePaint : FOVEBehavior
                 {
                     colorPercentage += 1;
                 }
-                if (pixels[i].b > (Time.time - 1) / 256f && Time.time > 1)
+                if (pixels[i].b > (Time.timeSinceLevelLoad - 1) / 256f && Time.timeSinceLevelLoad > 1)
                 {
                     lastOneSecondPixels += 1;
                 }
-                if (pixels[i].b > (Time.time - 3) / 256f && Time.time > 3)
+                if (pixels[i].b > (Time.timeSinceLevelLoad - 3) / 256f && Time.timeSinceLevelLoad > 3)
                 {
                     lastThreeSecondPixels += 1;
                 }
-                if (pixels[i].b > (Time.time - 5) / 256f && Time.time > 5)
+                if (pixels[i].b > (Time.timeSinceLevelLoad - 5) / 256f && Time.timeSinceLevelLoad > 5)
                 {
                     lastFiveSecondPixels += 1;
                 }
-                if (pixels[i].b > (Time.time - 10) / 256f && Time.time > 10)
+                if (pixels[i].b > (Time.timeSinceLevelLoad - 10) / 256f && Time.timeSinceLevelLoad > 10)
                 {
                     lastTenSecondPixels += 1;
                 }

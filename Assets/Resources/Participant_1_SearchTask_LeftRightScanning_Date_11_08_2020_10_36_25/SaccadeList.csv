@@ -1,0 +1,8 @@
+Saccade_Number;Start_Time;Left-Right_Saccade;Left-Right_Saccade_percentage;Radial_Saccade;Radial_Saccade_percentage;StartPosition_x;StartPosition_y;HeadsetNormedStartPosition_x;HeadsetNormedStartPosition_y;EndPosition_x;EndPosition_y;HeadsetNormedEndPosition_x;HeadsetNormedEndPosition_y;Saccade_Duration;Saccade_Magnitude;messages;
+1;73.434;0;0;1;1;-0.75;-34.39;12.54;-30.89;-5.853;-3.969;7.407;-0.391;0.020;30.84;
+2;81.944;0;0;0;0.5;-10.80;12.43;10.57;12.93;-7.596;10.775;13.716;11.288;0.016;3.61;
+3;85.802;0;0;0;0.3333333;4.06;-5.28;22.52;-1.89;8.325;-8.850;26.708;-5.429;0.057;5.56;
+4;91.487;1;0.25;0;0.25;-16.51;-26.91;0.47;-20.92;-21.527;-26.630;-4.544;-20.632;0.014;5.03;
+5;93.215;0;0.2;0;0.2;15.90;-24.88;15.38;-16.23;20.607;-22.331;19.858;-13.678;0.014;5.36;
+6;93.587;0;0.1666667;0;0.1666667;22.27;-15.97;20.55;-7.52;21.962;-12.879;20.260;-4.448;0.017;3.10;
+7;95.486;1;0.2857143;1;0.2857143;29.47;-1.53;20.49;2.09;22.786;-0.288;13.950;3.333;0.016;6.80;
